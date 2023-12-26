@@ -76,7 +76,7 @@
           var el = self.render(true);
 
           // Add extra className to the pagination element
-            if (attributes.className) {
+          if (attributes.className) {
             el.addClass(attributes.className);
           }
 
@@ -140,11 +140,24 @@
       },
 
       getPageLinkTag: function(index) {
-        var pageLink = attributes.pageLink;
-        return pageLink ? `<a href="${pageLink}">${index}</a>` : `<a>${index}</a>`;
+        let pageLink
+        if(typeof attributes.pageLink === "function"){
+          const pageNumber = attributes.pageNumber
+          let _index = index
+          if(index === attributes.prevText){
+            _index = pageNumber -1
+          }else if(index ===  attributes.nextText){
+            _index = pageNumber + 1
+          }
+          pageLink = attributes.pageLink(_index)
+        }else if(attributes.pageLink){
+          pageLink = attributes.pageLink
+        }
+        const linkClassName = attributes.linkClassName || ""
+        return pageLink ? `<a class="${linkClassName}" href="${pageLink}">${index}</a>` : `<a class="${linkClassName}">${index}</a>`;
       },
 
-      // Generate HTML for page numbers
+      // Generate HTML for page numbers§
       generatePageNumbersHTML: function(args) {
         var self = this;
         var currentPage = args.currentPage;
@@ -161,14 +174,15 @@
         var pageClassName = attributes.pageClassName || '';
         var activeClassName = attributes.activeClassName || '';
         var disableClassName = attributes.disableClassName || '';
-
+        var liClassName = attributes.liClassName || ''
+        var linkClassName = attributes.linkClassName || ''
         // Display all page numbers if page range disabled
         if (attributes.pageRange === null) {
           for (i = 1; i <= totalPage; i++) {
             if (i == currentPage) {
-              html += `<li class="${classPrefix}-page J-paginationjs-page ${pageClassName} ${activeClassName}" data-num="${i}"><a>${i}</a></li>`;
+              html += `<li class="${liClassName} ${classPrefix}-page J-paginationjs-page ${pageClassName} ${activeClassName}" data-num="${i}"><a class="${linkClassName}">${i}</a></li>`;
             } else {
-              html += `<li class="${classPrefix}-page J-paginationjs-page ${pageClassName}" data-num="${i}">${getPageLinkTag(i)}</li>`;
+              html += `<li class="${liClassName} ${classPrefix}-page J-paginationjs-page ${pageClassName}" data-num="${i}">${getPageLinkTag(i)}</li>`;
             }
           }
           return html;
@@ -177,35 +191,35 @@
         if (rangeStart <= 3) {
           for (i = 1; i < rangeStart; i++) {
             if (i == currentPage) {
-              html += `<li class="${classPrefix}-page J-paginationjs-page ${pageClassName} ${activeClassName}" data-num="${i}"><a>${i}</a></li>`;
+              html += `<li class="${liClassName} ${classPrefix}-page J-paginationjs-page ${pageClassName} ${activeClassName}" data-num="${i}"><a class="${linkClassName}">${i}</a></li>`;
             } else {
-              html += `<li class="${classPrefix}-page J-paginationjs-page ${pageClassName}" data-num="${i}">${getPageLinkTag(i)}</li>`;
+              html += `<li class="${liClassName} ${classPrefix}-page J-paginationjs-page ${pageClassName}" data-num="${i}">${getPageLinkTag(i)}</li>`;
             }
           }
         } else {
           if (!attributes.hideFirstOnEllipsisShow) {
-            html += `<li class="${classPrefix}-page ${classPrefix}-first J-paginationjs-page ${pageClassName}" data-num="1">${getPageLinkTag(1)}</li>`;
+            html += `<li class="${liClassName} ${classPrefix}-page ${classPrefix}-first J-paginationjs-page ${pageClassName}" data-num="1">${getPageLinkTag(1)}</li>`;
           }
-          html += `<li class="${classPrefix}-ellipsis ${disableClassName}"><a>${ellipsisText}</a></li>`;
+          html += `<li class="${liClassName} ${classPrefix}-ellipsis ${disableClassName}"><a class="${linkClassName}">${ellipsisText}</a></li>`;
         }
 
         for (i = rangeStart; i <= rangeEnd; i++) {
           if (i == currentPage) {
-            html += `<li class="${classPrefix}-page J-paginationjs-page ${pageClassName} ${activeClassName}" data-num="${i}"><a>${i}</a></li>`;
+            html += `<li class="${liClassName} ${classPrefix}-page J-paginationjs-page ${pageClassName} ${activeClassName}" data-num="${i}"><a class="${linkClassName}">${i}</a></li>`;
           } else {
-            html += `<li class="${classPrefix}-page J-paginationjs-page ${pageClassName}" data-num="${i}">${getPageLinkTag(i)}</li>`;
+            html += `<li class="${liClassName} ${classPrefix}-page J-paginationjs-page ${pageClassName}" data-num="${i}">${getPageLinkTag(i)}</li>`;
           }
         }
 
         if (rangeEnd >= totalPage - 2) {
           for (i = rangeEnd + 1; i <= totalPage; i++) {
-            html += `<li class="${classPrefix}-page J-paginationjs-page ${pageClassName}" data-num="${i}">${getPageLinkTag(i)}</li>`;
+            html += `<li class="${liClassName} ${classPrefix}-page J-paginationjs-page ${pageClassName}" data-num="${i}">${getPageLinkTag(i)}</li>`;
           }
         } else {
-          html += `<li class="${classPrefix}-ellipsis ${disableClassName}"><a>${ellipsisText}</a></li>`;
+          html += `<li class="${liClassName} ${classPrefix}-ellipsis ${disableClassName}"><a class="${linkClassName}">${ellipsisText}</a></li>`;
 
           if (!attributes.hideLastOnEllipsisShow) {
-            html += `<li class="${classPrefix}-page ${classPrefix}-last J-paginationjs-page ${pageClassName}" data-num="${totalPage}">${getPageLinkTag(totalPage)}</li>`;
+            html += `<li class="${liClassName} ${classPrefix}-page ${classPrefix}-last J-paginationjs-page ${pageClassName}" data-num="${totalPage}">${getPageLinkTag(totalPage)}</li>`;
           }
         }
 
@@ -257,7 +271,7 @@
 
         var header = typeof attributes.header === 'function' ? attributes.header(currentPage, totalPage, totalNumber) : attributes.header;
         var footer = typeof attributes.footer === 'function' ? attributes.footer(currentPage, totalPage, totalNumber) : attributes.footer;
-
+        const linkClassName = attributes.linkClassName || ""
         // Prepend extra contents to the pagination buttons
         if (header) {
           formattedString = self.replaceVariables(header, {
@@ -295,7 +309,7 @@
           if (showPrevious) {
             if (currentPage <= 1) {
               if (!autoHidePrevious) {
-                html += `<li class="${classPrefix}-prev ${disableClassName} ${prevClassName}"><a>${prevText}</a></li>`;
+                html += `<li class="${classPrefix}-prev ${disableClassName} ${prevClassName}"><a class="${linkClassName}">${prevText}</a></li>`;
               }
             } else {
               html += `<li class="${classPrefix}-prev J-paginationjs-previous ${prevClassName}" data-num="${currentPage - 1}" title="Previous page">${getPageLinkTag(prevText)}</li>`;
@@ -311,7 +325,7 @@
           if (showNext) {
             if (currentPage >= totalPage) {
               if (!autoHideNext) {
-                html += `<li class="${classPrefix}-next ${disableClassName} ${nextClassName}"><a>${nextText}</a></li>`;
+                html += `<li class="${classPrefix}-next ${disableClassName} ${nextClassName}"><a class="${linkClassName}">${nextText}</a></li>`;
               }
             } else {
               html += `<li class="${classPrefix}-next J-paginationjs-next ${nextClassName}" data-num="${currentPage + 1}" title="Next page">${getPageLinkTag(nextText)}</li>`;
@@ -866,7 +880,7 @@
         // Whether to load the default page
         var validTotalPage = Math.max(self.getTotalPage(), 1)
         var defaultPageNumber = attributes.pageNumber;
-        
+
         // Default pageNumber should be 1 when totalNumber is dynamic
         if (self.isDynamicTotalNumber) {
           if (attributes.resetPageNumberOnInit) defaultPageNumber = 1;
@@ -887,7 +901,7 @@
         return this;
       } else if (typeof options === 'string') {
         var args = Array.prototype.slice.apply(arguments);
-          args[0] = eventPrefix + args[0];
+        args[0] = eventPrefix + args[0];
 
         switch (options) {
           case 'previous':
@@ -913,7 +927,7 @@
           case 'getSelectedPageData':
           case 'getCurrentPageData':
             return container.data('pagination').currentPageData;
-          // Whether pagination has been disabled
+            // Whether pagination has been disabled
           case 'isDisabled':
             return container.data('pagination').model.disabled === true;
           default:
